@@ -1,5 +1,5 @@
 #include "CoreEngine.h"
-#include "Assets/IniReader/IniManager.h"
+#include "IniManager.h"
 
 #include "Assets/Parser.h"
 #include "Assets/IniReader/IniObject.h"
@@ -11,7 +11,7 @@ FIniManager::FIniManager(FAssetsManager* InAssetsManager)
 	, AssetsManager(InAssetsManager)
 	, IniSuffix(".ini")
 {
-	IniParser = std::make_shared<FParser>(InSeparatorCharArray, InCommentCharArray, InIgnoredCharArray);
+	IniParser = std::make_shared<SQRLLParser>(InSeparatorCharArray, InCommentCharArray, InIgnoredCharArray);
 }
 
 std::shared_ptr<FIniObject> FIniManager::GetIniObject(const std::string& IniName)
@@ -30,7 +30,7 @@ std::shared_ptr<FIniObject> FIniManager::GetIniObject(const std::string& IniName
 	return IniObject;
 }
 
-FParser* FIniManager::GetIniParser() const
+SQRLLParser* FIniManager::GetIniParser() const
 {
 	return IniParser.get();
 }

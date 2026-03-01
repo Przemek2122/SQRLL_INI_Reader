@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-class FParser;
+class SQRLLParser;
 class FIniObject;
 
 /**
@@ -20,7 +20,7 @@ public:
 	std::shared_ptr<FIniObject> GetIniObject(const std::string& IniName);
 
 	/** Shared ini parser for FIniObject */
-	FParser* GetIniParser() const;
+	SQRLLParser* GetIniParser() const;
 
 	/**
 	 * In case where ini is huge or you know for sure you do not want it to exist anymore.
@@ -42,7 +42,7 @@ protected:
 	CMap<std::string, std::shared_ptr<FIniObject>> IniNameToObjectMap;
 
 	/** ini parser for shared access */
-	std::shared_ptr<FParser> IniParser;
+	std::shared_ptr<SQRLLParser> IniParser;
 
 	CArray<char> InSeparatorCharArray;
 	CArray<char> InCommentCharArray;
