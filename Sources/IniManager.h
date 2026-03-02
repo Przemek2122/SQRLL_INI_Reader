@@ -2,7 +2,10 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 class SQRLLParser;
 class FIniObject;
@@ -14,7 +17,7 @@ class FIniObject;
 class ENGINE_API FIniManager
 {
 public:
-	FIniManager(FAssetsManager* InAssetsManager);
+	FIniManager();
 
 	/** Get existing or create new ini object */
 	std::shared_ptr<FIniObject> GetIniObject(const std::string& IniName);
@@ -39,16 +42,14 @@ protected:
 
 protected:
 	/** Map of the objects. String to Object map. */
-	CMap<std::string, std::shared_ptr<FIniObject>> IniNameToObjectMap;
+	std::pmr::unordered_map<std::string, std::shared_ptr<FIniObject>> IniNameToObjectMap;
 
 	/** ini parser for shared access */
 	std::shared_ptr<SQRLLParser> IniParser;
 
-	CArray<char> InSeparatorCharArray;
-	CArray<char> InCommentCharArray;
-	CArray<char> InIgnoredCharArray;
-
-	FAssetsManager* AssetsManager;
+	std::vector<char> InSeparatorCharArray;
+	std::vector<char> InCommentCharArray;
+	std::vector<char> InIgnoredCharArray;
 
 	std::string IniSuffix;
 

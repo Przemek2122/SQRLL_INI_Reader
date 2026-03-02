@@ -1,14 +1,11 @@
-#include "CoreEngine.h"
 #include "IniManager.h"
+#include "SQRLLParser.h"
+#include "IniObject.h"
 
-#include "Assets/Parser.h"
-#include "Assets/IniReader/IniObject.h"
-
-FIniManager::FIniManager(FAssetsManager* InAssetsManager)
+FIniManager::FIniManager()
 	: InSeparatorCharArray({ '=' })
 	, InCommentCharArray({ ';', '#' })
 	, InIgnoredCharArray({ ' ', '	' })
-	, AssetsManager(InAssetsManager)
 	, IniSuffix(".ini")
 {
 	IniParser = std::make_shared<SQRLLParser>(InSeparatorCharArray, InCommentCharArray, InIgnoredCharArray);
@@ -56,7 +53,7 @@ std::shared_ptr<FIniObject> FIniManager::CreateIniObject(const std::string& IniN
 
 	IniObjectSharedPtr->Initialize();
 
-	IniNameToObjectMap.Emplace(IniName, IniObjectSharedPtr);
+	IniNameToObjectMap.emplace(IniName, IniObjectSharedPtr);
 
 	return IniObjectSharedPtr;
 }
