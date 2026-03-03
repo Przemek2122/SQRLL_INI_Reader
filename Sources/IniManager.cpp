@@ -2,26 +2,28 @@
 #include "SQRLLParser.h"
 #include "IniObject.h"
 
-FIniManager::FIniManager()
-	: InSeparatorCharArray({ '=' })
-	, InCommentCharArray({ ';', '#' })
-	, InIgnoredCharArray({ ' ', '	' })
-	, IniSuffix(".ini")
+FIniManager::FIniManager(SQRLLIniSettings InIniSettings)
+	: IniSettings(std::move(InIniSettings))
 {
-	IniParser = std::make_shared<SQRLLParser>(InSeparatorCharArray, InCommentCharArray, InIgnoredCharArray);
+	IniParser = std::make_shared<SQRLLParser>(
+		IniSettings.InSeparatorCharArray,
+		IniSettings.InCommentCharArray,
+		IniSettings.InIgnoredCharArray
+	);
 }
 
-std::shared_ptr<FIniObject> FIniManager::GetIniObject(const std::string& IniName)
+std::shared_ptr<FIniObject> FIniManager::GetIniObject(const std::string& IniName, const std::string& IniPath)
 {
 	std::shared_ptr<FIniObject> IniObject;
 
-	if (IniNameToObjectMap.ContainsKey(IniName))
+	auto It = IniNameToObjectMap.find(IniName);
+	if (It != IniNameToObjectMap.end())
 	{
 		IniObject = IniNameToObjectMap[IniName];
 	}
 	else
 	{
-		IniObject = CreateIniObject(IniName);
+		IniObject = CreateIniObject(IniName, IniPath);
 	}
 
 	return IniObject;
@@ -34,37 +36,16 @@ SQRLLParser* FIniManager::GetIniParser() const
 
 void FIniManager::RemoveIniObject(const std::string& IniName)
 {
-	if (IniNameToObjectMap.ContainsKey(IniName))
-	{
-		IniNameToObjectMap.Remove(IniName);
-	}
+	IniNameToObjectMap.erase(IniName);
 }
 
-FAssetsManager* FIniManager::GetAssetsManager() const
+std::shared_ptr<FIniObject> FIniManager::CreateIniObject(const std::string& IniName, const std::string& IniPath)
 {
-	return AssetsManager;
-}
-
-std::shared_ptr<FIniObject> FIniManager::CreateIniObject(const std::string& IniName)
-{
-	std::string IniFullPath = ConvertIniNameToRelativeFullPath(IniName) + IniSuffix;
-
-	std::shared_ptr<FIniObject> IniObjectSharedPtr = std::make_shared<FIniObject>(this, IniFullPath, IniName);
+	std::shared_ptr<FIniObject> IniObjectSharedPtr = std::make_shared<FIniObject>(this, IniPath, IniName);
 
 	IniObjectSharedPtr->Initialize();
 
 	IniNameToObjectMap.emplace(IniName, IniObjectSharedPtr);
 
 	return IniObjectSharedPtr;
-}
-
-std::string FIniManager::ConvertIniNameToRelativeFullPath(const std::string& IniName) const
-{
-	std::string FullPath;
-
-	FullPath += AssetsManager->GetConfigPathRelative();
-	FullPath += FFileSystem::GetPlatformSlash();
-	FullPath += IniName;
-
-	return FullPath;
 }

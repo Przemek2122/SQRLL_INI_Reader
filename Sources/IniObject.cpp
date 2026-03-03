@@ -1,9 +1,5 @@
-#include "CoreEngine.h"
-#include "Assets/IniReader/IniObject.h"
-
-#include "Assets/Assets/IniAsset.h"
-#include "Assets/IniReader/IniManager.h"
-#include "Misc/StringHelpers.h"
+#include "IniObject.h"
+#include "IniManager.h"
 
 FIniField::FIniField(std::string InName, std::string InValue)
 	: Name(std::move(InName))
@@ -23,12 +19,24 @@ const std::string& FIniField::GetValueAsString() const
 
 int FIniField::GetValueAsInt() const
 {
-	return SDL_atoi(Value.c_str());
+	return atoi(Value.c_str());
 }
 
 bool FIniField::GetValueAsBool() const
 {
-	return FStringHelpers::ToBoolValue(Value);
+	static const std::string Predefined_True1 = "true";
+	static const std::string Predefined_True2 = "True";
+	static const std::string Predefined_True3 = "TRUE";
+	static const std::string Predefined_TrueInt = "1";
+
+	if (Value == Predefined_True1 || Value == Predefined_True2 || Value == Predefined_True3 || Value == Predefined_TrueInt)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 bool FIniField::IsValid() const

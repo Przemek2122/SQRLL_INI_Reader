@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include <string>
+#include <unordered_map>
 
 class FIniAsset;
 class FIniManager;
@@ -11,13 +12,13 @@ class FIniManager;
  * Struct contains field from ini file.
  * It also can be converted to most common types - int and bool
  */
-struct ENGINE_API FIniField
+struct FIniField
 {
 public:
 	FIniField(std::string InName = std::string(), std::string InValue = std::string());
 
 	/** @returns name of the field. */
-	std::string GetName() const;
+	[[nodiscard]] std::string GetName() const;
 
 	/** @returns value of the field - most efficient way, returns string */
 	const std::string& GetValueAsString() const;
@@ -64,11 +65,11 @@ public:
 	void AddOrUpdateField(const FIniField& IniField);
 
 	/** Get size of fields array */
-	int32 GetNumberOfFields() const;
+	int32_t GetNumberOfFields() const;
 
 protected:
 	/** Fields map of ini file. */
-	CUnorderedMap<std::string, std::shared_ptr<FIniField>> FieldsMap;
+	std::unordered_map<std::string, std::shared_ptr<FIniField>> FieldsMap;
 
 	/** Owner manager */
 	FIniManager* IniManager;
@@ -81,7 +82,6 @@ protected:
 
 	/** Ini name only */
 	std::string IniName;
-
 
 #if DEBUG
 	bool bIsLoaded;

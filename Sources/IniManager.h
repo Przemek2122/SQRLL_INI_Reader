@@ -10,17 +10,38 @@
 class SQRLLParser;
 class FIniObject;
 
+struct SQRLLIniSettings
+{
+	SQRLLIniSettings()
+		: InSeparatorCharArray({ '=' })
+		, InCommentCharArray({ ';', '#' })
+		, InIgnoredCharArray({ ' ', '	' })
+		, IniSuffix(".ini")
+	{
+	}
+
+	std::vector<char> InSeparatorCharArray;
+	std::vector<char> InCommentCharArray;
+	std::vector<char> InIgnoredCharArray;
+
+	std::string IniSuffix;
+};
+
 /**
  * Class for managing ini files.
  * Each ini file gets its own object for management.
  */
-class ENGINE_API FIniManager
+class FIniManager
 {
 public:
-	FIniManager();
+	FIniManager(SQRLLIniSettings InIniSettings = SQRLLIniSettings());
 
-	/** Get existing or create new ini object */
-	std::shared_ptr<FIniObject> GetIniObject(const std::string& IniName);
+	/**
+	 * Get existing or create new ini object
+	 * @param IniName expects unique ini name for search purposes in map
+	 * @param IniPath expects path to asset (Whole /var/config/SomeIniFile.ini)
+	 */
+	std::shared_ptr<FIniObject> GetIniObject(const std::string& IniName, const std::string& IniPath);
 
 	/** Shared ini parser for FIniObject */
 	SQRLLParser* GetIniParser() const;
@@ -31,14 +52,13 @@ public:
 	 */
 	void RemoveIniObject(const std::string& IniName);
 
-	FAssetsManager* GetAssetsManager() const;
-
 protected:
-	/** Create new ini object. */
-	std::shared_ptr<FIniObject> CreateIniObject(const std::string& IniName);
-
-	/** Adds base path for ini name to be able to load file. */
-	std::string ConvertIniNameToRelativeFullPath(const std::string& IniName) const;
+	/**
+	 * Create new ini object.
+	 * @param IniName expects unique ini name for search purposes in map
+	 * @param IniPath expects path to asset (Whole /var/config/SomeIniFile.ini)
+	 */
+	std::shared_ptr<FIniObject> CreateIniObject(const std::string& IniName, const std::string& IniPath);
 
 protected:
 	/** Map of the objects. String to Object map. */
@@ -47,10 +67,6 @@ protected:
 	/** ini parser for shared access */
 	std::shared_ptr<SQRLLParser> IniParser;
 
-	std::vector<char> InSeparatorCharArray;
-	std::vector<char> InCommentCharArray;
-	std::vector<char> InIgnoredCharArray;
-
-	std::string IniSuffix;
+	SQRLLIniSettings IniSettings;
 
 };
