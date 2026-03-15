@@ -68,7 +68,7 @@ void SQRLLIniObject::LoadIni(SQRLLParserData ParserDefaults)
 {
 	if (bIsLoaded) return;
 
-	std::string WholeIniTextFile = ReadWholeFile();
+	const std::string WholeIniTextFile = ReadWholeFile();
 	if (!WholeIniTextFile.empty())
 	{
 		throw SQRLLIniObjectException("Ini file is empty.");
@@ -108,9 +108,38 @@ void SQRLLIniObject::LoadIni(SQRLLParserData ParserDefaults)
 
 void SQRLLIniObject::SaveIni(SQRLLParserData ParserDefaults)
 {
-	SQRLLParser Parser(std::move(ParserDefaults));
+	std::vector<SQRLLParserLine> Lines;
 
+	// Convert everything we have into string
+	for (std::pair<const std::string, std::shared_ptr<SQRLLIniField>>& Field : FieldsMap)
+	{
+		SQRLLParserLine ParserLine;
 
+		SQRLLParserText KeyParserText(Field.first, SQRLLParserTextType::Word);
+		ParserLine.Texts.push_back(KeyParserText);
+
+		SQRLLParserText ValueParserText(Field.second.get()->GetValueAsString(), SQRLLParserTextType::Word);
+		ParserLine.Texts.push_back(ValueParserText);
+
+		Lines.push_back(ParserLine);
+	}
+
+	const SQRLLParser Parser(std::move(ParserDefaults));
+	std::string WholeFileString = Parser.AdvancedParseLinesIntoString(Lines);
+
+	std::ofstream File(IniPath, std::ios::binary);
+	if (File.is_open())
+	{
+		File.write(WholeFileString.data(), WholeFileString.size());
+	}
+}
+
+void SQRLLIniObject::SaveIniOnlyIfLoaded(SQRLLParserData ParserDefaults)
+{
+	if (bIsLoaded)
+	{
+		SaveIni(std::move(ParserDefaults));
+	}
 }
 
 bool SQRLLIniObject::ContainsFieldByName(const std::string& FieldName) const

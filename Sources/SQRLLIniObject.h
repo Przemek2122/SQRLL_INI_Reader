@@ -60,8 +60,14 @@ public:
 	/** If you want to check if file exists, use Initialize to load than IsLoaded() */
 	bool IsLoaded() const { return bIsLoaded; }
 
+	/** Load disk data into RAM. */
 	void LoadIni(SQRLLParserData ParserDefaults = SQRLLParserData());
+
+	/** Sav disk data into RAM. We do not care if it was loaded before. If not and called. Overwrite. */
 	void SaveIni(SQRLLParserData ParserDefaults = SQRLLParserData());
+
+	/** SaveIni but will save only if loaded before */
+	void SaveIniOnlyIfLoaded(SQRLLParserData ParserDefaults = SQRLLParserData());
 
 	/** @returns true if loaded ini contains given field name */
 	[[nodiscard]] bool ContainsFieldByName(const std::string& FieldName) const;
