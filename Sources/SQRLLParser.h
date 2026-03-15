@@ -1,4 +1,4 @@
-// Created by https://www.linkedin.com/in/przemek2122/ 2026
+// Created by https://www.linkedin.com/in/przemek2122/ 2024-2026
 
 #pragma once
 
@@ -9,10 +9,33 @@
 /** Defaults for Parser. */
 namespace SQRLLParserDefaults
 {
+	static constexpr char NewLineChar = '\n';
 	static const std::vector DefaultSeparatorCharArray = { ',' };
 	static const std::vector DefaultCommentCharArray = { '#' };
 	static const std::vector DefaultIgnoredCharArray = { ' ' };
 }
+
+/** Structure with parser data */
+struct SQRLLParserData
+{
+	SQRLLParserData(
+		const char InNewLineChar = SQRLLParserDefaults::NewLineChar,
+		std::vector<char> InSeparatorCharArray = SQRLLParserDefaults::DefaultSeparatorCharArray,
+		std::vector<char> InCommentCharArray = SQRLLParserDefaults::DefaultCommentCharArray,
+		std::vector<char> InIgnoredCharArray = SQRLLParserDefaults::DefaultIgnoredCharArray
+	)
+		: SeparatorCharArray(std::move(InSeparatorCharArray))
+		, CommentCharArray(std::move(InCommentCharArray))
+		, IgnoredCharArray(std::move(InIgnoredCharArray))
+		, NewLineChar(InNewLineChar)
+	{
+	}
+
+	std::vector<char> SeparatorCharArray;
+	std::vector<char> CommentCharArray;
+	std::vector<char> IgnoredCharArray;
+	char NewLineChar;
+};
 
 /** Enum for ParserLineType, it's used to determine what type of line is it. */
 enum class SQRLLParserTextType : uint8_t
@@ -85,20 +108,16 @@ public:
 	 * @param InIgnoredCharArray Defines which chars are ignored like they were not present
 	 * @param InCommentCharArray Defines which chars means comment and rest of the line after them are ignored.
 	 */
-	SQRLLParser(
-		const std::vector<char>& InSeparatorCharArray,
-		const std::vector<char>& InCommentCharArray = SQRLLParserDefaults::DefaultCommentCharArray,
-		const std::vector<char>& InIgnoredCharArray = SQRLLParserDefaults::DefaultIgnoredCharArray
-	);
+	SQRLLParser(SQRLLParserData InParserData);
 
 	/**
-	 * God for line by line work. Bad for anything el
+	 * Good for line by line work. Bad for anything else
 	 * Takes given string and splits it into words by Separators set in constructor
 	 */
 	std::vector<std::string> SimpleParseLineIntoStrings(const std::string& Line);
 
 	/**
-	 * God for line by line work. Bad for anything else
+	 * Good for line by line work. Bad for anything else
 	 * Reverse of SimpleParseLineIntoStrings, for saving purposes
 	 */
 	[[nodiscard]] std::string SimpleParseStringsIntoLine(const std::vector<std::string>& Strings) const;
@@ -107,7 +126,7 @@ public:
 	 * It's more complex and it returns comments
 	 * Takes given string and splits it into lines by Separators set in constructor
 	 */
-	SQRLLParserLine AdvancedParseStringIntoLines(const std::string& Line);
+	std::vector<SQRLLParserLine> AdvancedParseStringIntoLines(const std::string& String);
 
 	/**
 	 * Reverse of AdvancedParseStringIntoLines, for saving purposes
@@ -118,9 +137,6 @@ public:
 
 	/** Splits given string by given  */
 	static std::vector<std::string> SplitString(const std::string& InString, const std::vector<char>& InSeparatorCharArray);
-
-	/** Sets default properties depending on arrays */
-	void SetDefaultParseProperties(std::string& Comment, std::string& Separator, std::string& Ignored) const;
 
 	/** Utility to compare characters */
 	inline static bool AreCharsEqual(char A, char B);

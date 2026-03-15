@@ -1,7 +1,6 @@
-// Created by https://www.linkedin.com/in/przemek2122/ 2026
+// Created by https://www.linkedin.com/in/przemek2122/ 2024-2026
 
 #include "SQRLLParser.h"
-
 #include <algorithm>
 
 SQRLLParserLine::SQRLLParserLine(SQRLLParserLine&& InOther) noexcept
@@ -34,10 +33,11 @@ const char* SQRLLParserException::what() const noexcept
 	return message.c_str();
 }
 
-SQRLLParser::SQRLLParser(const std::vector<char>& InSeparatorCharArray, const std::vector<char>& InCommentCharArray, const std::vector<char>& InIgnoredCharArray)
-	: SeparatorCharArray(InSeparatorCharArray)
-	, CommentCharArray(InCommentCharArray)
-	, IgnoredCharArray(InIgnoredCharArray)
+SQRLLParser::SQRLLParser(SQRLLParserData InParserData)
+	: SeparatorCharArray(std::move(InParserData.SeparatorCharArray))
+	, CommentCharArray(std::move(InParserData.CommentCharArray))
+	, IgnoredCharArray(std::move(InParserData.IgnoredCharArray))
+	, NewLineChar(InParserData.NewLineChar)
 {
 	if (SeparatorCharArray.empty())
 	{
@@ -56,9 +56,6 @@ SQRLLParser::SQRLLParser(const std::vector<char>& InSeparatorCharArray, const st
 		// This is not crucial
 		throw SQRLLParserException("FParser has no ignored characters.");
 	}
-
-	// @TODO Multi OS support
-	NewLineChar = '\n';
 }
 
 std::vector<std::string> SQRLLParser::SimpleParseLineIntoStrings(const std::string& Line)
@@ -121,16 +118,29 @@ std::string SQRLLParser::SimpleParseStringsIntoLine(const std::vector<std::strin
 	return ParsedLine;
 }
 
-SQRLLParserLine SQRLLParser::AdvancedParseStringIntoLines(const std::string& Line)
+std::vector<SQRLLParserLine> SQRLLParser::AdvancedParseStringIntoLines(const std::string& String)
 {
 	std::string CurrentWord;
 
 	SQRLLParserLine ParserLine;
+	std::vector<SQRLLParserLine> ParserLineContainer;
 
 	SQRLLParserTextType ParserType = SQRLLParserTextType::Word;
 
-	for (const char& CurrentChar : Line)
+	for (const char& CurrentChar : String)
 	{
+		// Line split - Next line
+		if (CurrentChar == NewLineChar)
+		{
+			ParserLineContainer.push_back(ParserLine);
+
+			// Reset data for next line / word
+			ParserLine = SQRLLParserLine();
+			CurrentWord = "";
+
+			continue;
+		}
+
 		if (IsComment(CurrentChar) || ParserType == SQRLLParserTextType::Comment)
 		{
 			if (ParserType != SQRLLParserTextType::Comment)
@@ -167,15 +177,11 @@ SQRLLParserLine SQRLLParser::AdvancedParseStringIntoLines(const std::string& Lin
 
 	ParserLine.Texts.emplace_back(CurrentWord, ParserType);
 
-	return std::move(ParserLine);
+	return std::move(ParserLineContainer);
 }
 
 std::string SQRLLParser::AdvancedParseLinesIntoString(const std::vector<SQRLLParserLine>& Lines) const
 {
-	std::string Comment, Separator, Ignored;
-
-	SetDefaultParseProperties(Comment, Separator, Ignored);
-
 	std::string OutParsedString;
 
 	for (size_t CurrentLineIndex = 0; CurrentLineIndex < Lines.size(); CurrentLineIndex++)
@@ -272,48 +278,6 @@ std::vector<std::string> SQRLLParser::SplitString(const std::string& InString, c
 	}
 
 	return SubStrings;
-}
-
-void SQRLLParser::SetDefaultParseProperties(std::string& Comment, std::string& Separator, std::string& Ignored) const
-{
-	if (!SeparatorCharArray.empty())
-	{
-		Separator = SeparatorCharArray[0];
-	}
-	else if (!SQRLLParserDefaults::DefaultSeparatorCharArray.empty())
-	{
-		Separator = SQRLLParserDefaults::DefaultSeparatorCharArray[0];
-	}
-	else
-	{
-		throw SQRLLParserException("FParser has no separator characters.");
-	}
-
-	if (!CommentCharArray.empty())
-	{
-		Comment = CommentCharArray[0];
-	}
-	else if (!SQRLLParserDefaults::DefaultCommentCharArray.empty())
-	{
-		Comment = SQRLLParserDefaults::DefaultCommentCharArray[0];
-	}
-	else
-	{
-		throw SQRLLParserException("FParser has no comment characters.");
-	}
-
-	if (!IgnoredCharArray.empty())
-	{
-		Ignored = IgnoredCharArray[0];
-	}
-	else if (!SQRLLParserDefaults::DefaultIgnoredCharArray.empty())
-	{
-		Ignored = SQRLLParserDefaults::DefaultIgnoredCharArray[0];
-	}
-	else
-	{
-		throw SQRLLParserException("FParser has no ignored characters.");
-	}
 }
 
 bool SQRLLParser::AreCharsEqual(const char A, const char B)
