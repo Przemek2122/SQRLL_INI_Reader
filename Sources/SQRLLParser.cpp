@@ -18,9 +18,10 @@ SQRLLParserLine::SQRLLParserLine(std::vector<SQRLLParserText> InTexts)
 {
 }
 
-void SQRLLParserLine::operator=(const SQRLLParserLine& InOther)
+SQRLLParserLine& SQRLLParserLine::operator=(const SQRLLParserLine& InOther)
 {
 	Texts = InOther.Texts;
+	return *this;
 }
 
 SQRLLParserException::SQRLLParserException(const char* msg)
@@ -132,11 +133,22 @@ std::vector<SQRLLParserLine> SQRLLParser::AdvancedParseStringIntoLines(const std
 		// Line split - Next line
 		if (CurrentChar == NewLineChar)
 		{
-			ParserLineContainer.push_back(ParserLine);
+			// Save current word if any
+			if (!CurrentWord.empty())
+			{
+				ParserLine.Texts.emplace_back(CurrentWord, ParserType);
+			}
+
+			// Add line only if it has content
+			if (!ParserLine.Texts.empty())
+			{
+				ParserLineContainer.push_back(ParserLine);
+			}
 
 			// Reset data for next line / word
 			ParserLine = SQRLLParserLine();
 			CurrentWord = "";
+			ParserType = SQRLLParserTextType::Word;
 
 			continue;
 		}
@@ -145,8 +157,6 @@ std::vector<SQRLLParserLine> SQRLLParser::AdvancedParseStringIntoLines(const std
 		{
 			if (ParserType != SQRLLParserTextType::Comment)
 			{
-				ParserType = SQRLLParserTextType::Comment;
-
 				// We got comment to end of the line - always
 				if (!CurrentWord.empty())
 				{
@@ -154,6 +164,8 @@ std::vector<SQRLLParserLine> SQRLLParser::AdvancedParseStringIntoLines(const std
 
 					CurrentWord.clear();
 				}
+
+				ParserType = SQRLLParserTextType::Comment;
 			}
 
 			CurrentWord += CurrentChar;
@@ -167,7 +179,7 @@ std::vector<SQRLLParserLine> SQRLLParser::AdvancedParseStringIntoLines(const std
 				CurrentWord.clear();
 			}
 
-			ParserLine.Texts.emplace_back(&CurrentChar, SQRLLParserTextType::Ignored);
+			ParserLine.Texts.emplace_back(std::string(1, CurrentChar), SQRLLParserTextType::Ignored);
 		}
 		else
 		{
@@ -175,9 +187,17 @@ std::vector<SQRLLParserLine> SQRLLParser::AdvancedParseStringIntoLines(const std
 		}
 	}
 
-	ParserLine.Texts.emplace_back(CurrentWord, ParserType);
+	if (!CurrentWord.empty())
+	{
+		ParserLine.Texts.emplace_back(CurrentWord, ParserType);
+	}
 
-	return std::move(ParserLineContainer);
+	if (!ParserLine.Texts.empty())
+	{
+		ParserLineContainer.push_back(ParserLine);
+	}
+
+	return ParserLineContainer;
 }
 
 std::string SQRLLParser::AdvancedParseLinesIntoString(const std::vector<SQRLLParserLine>& Lines) const
@@ -275,6 +295,11 @@ std::vector<std::string> SQRLLParser::SplitString(const std::string& InString, c
 		{
 			CurrentSubString += Char;
 		}
+	}
+
+	if (!CurrentSubString.empty())
+	{
+		SubStrings.emplace_back(CurrentSubString);
 	}
 
 	return SubStrings;

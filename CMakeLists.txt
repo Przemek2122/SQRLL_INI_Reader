@@ -4,7 +4,6 @@ project(IniReader)
 set(CMAKE_CXX_STANDARD 17)
 
 add_library(${PROJECT_NAME}
-    Sources/IniManager.cpp
         Sources/SQRLLIniObject.cpp
         Sources/SQRLLParser.cpp
 )

@@ -69,7 +69,7 @@ void SQRLLIniObject::LoadIni(SQRLLParserData ParserDefaults)
 	if (bIsLoaded) return;
 
 	const std::string WholeIniTextFile = ReadWholeFile();
-	if (!WholeIniTextFile.empty())
+	if (WholeIniTextFile.empty())
 	{
 		throw SQRLLIniObjectException("Ini file is empty.");
 	}
@@ -166,12 +166,10 @@ SQRLLIniField SQRLLIniObject::FindFieldByName(const std::string& FieldName) cons
 
 SQRLLIniField SQRLLIniObject::FindFieldByValue(const std::string& FieldValue)
 {
-#if DEBUG
 	if (!bIsLoaded)
 	{
-		LOG_ERROR("Accessing FindFieldByValue before ini is loaded, ini name: " << IniName);
+		throw SQRLLIniObjectException(std::string(("Accessing FindFieldByValue before ini is loaded, ini name: ") + IniPath).c_str());
 	}
-#endif
 
 	SQRLLIniField Value;
 

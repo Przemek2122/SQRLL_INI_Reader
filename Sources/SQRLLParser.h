@@ -20,9 +20,9 @@ struct SQRLLParserData
 {
 	SQRLLParserData(
 		const char InNewLineChar = SQRLLParserDefaults::NewLineChar,
-		std::vector<char> InSeparatorCharArray = SQRLLParserDefaults::DefaultSeparatorCharArray,
-		std::vector<char> InCommentCharArray = SQRLLParserDefaults::DefaultCommentCharArray,
-		std::vector<char> InIgnoredCharArray = SQRLLParserDefaults::DefaultIgnoredCharArray
+		std::vector<char> InSeparatorCharArray = { SQRLLParserDefaults::DefaultSeparatorCharArray },
+		std::vector<char> InCommentCharArray =  { SQRLLParserDefaults::DefaultCommentCharArray },
+		std::vector<char> InIgnoredCharArray = { SQRLLParserDefaults::DefaultIgnoredCharArray }
 	)
 		: SeparatorCharArray(std::move(InSeparatorCharArray))
 		, CommentCharArray(std::move(InCommentCharArray))
@@ -79,7 +79,7 @@ struct SQRLLParserLine
 
 	SQRLLParserLine(std::vector<SQRLLParserText> InTexts);
 
-	void operator=(const SQRLLParserLine& InOther);
+	SQRLLParserLine& operator=(const SQRLLParserLine& InOther);
 
 	std::vector<SQRLLParserText> Texts;
 };
@@ -88,7 +88,7 @@ struct SQRLLParserLine
 class SQRLLParserException : public std::exception
 {
 private:
-	std::pmr::string message;
+	std::string message;
 public:
 	SQRLLParserException(const char* msg);
 
